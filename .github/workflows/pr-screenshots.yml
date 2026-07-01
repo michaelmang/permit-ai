@@ -3,6 +3,10 @@ name: PR wizard screenshots
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
 
 permissions:
   contents: read
@@ -40,7 +44,10 @@ jobs:
           if-no-files-found: error
 
       - uses: iterative/setup-cml@v2
-      - name: Build PR comment
+        with:
+          vega: false
+
+      - name: Post wizard screenshots to PR
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -50,19 +57,15 @@ jobs:
             echo "Screenshots from each step of the link generator wizard."
             echo ""
             echo "### Step 1 — Scope selection"
-            cml-publish screenshots/01-step-1-scopes.png --md
+            echo "![](./screenshots/01-step-1-scopes.png)"
             echo ""
             echo "### Step 2 — Article URL"
-            cml-publish screenshots/02-step-2-article.png --md
+            echo "![](./screenshots/02-step-2-article.png)"
             echo ""
             echo "### Step 3 — Review"
-            cml-publish screenshots/03-step-3-review.png --md
+            echo "![](./screenshots/03-step-3-review.png)"
             echo ""
             echo "### Step 4 — Link ready"
-            cml-publish screenshots/04-step-4-link-ready.png --md
+            echo "![](./screenshots/04-step-4-link-ready.png)"
           } > report.md
-
-      - uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body-path: report.md
+          cml comment create --publish report.md

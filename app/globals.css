@@ -282,6 +282,34 @@ button:disabled {
   margin-top: 6px;
 }
 
+.field-error {
+  font-size: 13px;
+  color: #b91c1c;
+  margin: 8px 0 0;
+}
+
+.scope-suggest {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.scope-suggest-form {
+  margin-top: 12px;
+}
+
+.scope-suggest-form .field-label {
+  margin-top: 12px;
+}
+
+.scope-suggest-form textarea {
+  min-height: 72px;
+}
+
+.scope-suggest-form a {
+  text-decoration: none;
+}
+
 .target-line {
   font-size: 13.5px;
   color: var(--text-muted);
