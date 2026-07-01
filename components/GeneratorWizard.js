@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { SCOPES } from "../lib/scopes";
 import { b64encode } from "../lib/codec";
+import { buildScopeSuggestionUrl } from "../lib/github";
+import { isValidHttpUrl } from "../lib/validation";
 
 export default function GeneratorWizard() {
   const [step, setStep] = useState(1);
@@ -32,7 +34,7 @@ export default function GeneratorWizard() {
       generated_at: new Date().toISOString(),
       scopes: none ? ["none"] : selectedKeys,
       none,
-      target,
+      target: target.trim(),
       attestation: "self-attested",
       verified: false,
     };
@@ -57,7 +59,7 @@ export default function GeneratorWizard() {
   return (
     <>
       {step < 4 && <div className="step-indicator">Step {step} of 3</div>}
-      <h1>Here&rsquo;s how I use AI</h1>
+      <h1>Here&rsquo;s how I used AI</h1>
 
       {step === 1 && (
         <Step1
@@ -94,6 +96,11 @@ export default function GeneratorWizard() {
 
 function Step1({ none, scopes, toggleScope, toggleNone, onContinue }) {
   const selectedCount = Object.values(scopes).filter(Boolean).length;
+  const [showSuggest, setShowSuggest] = useState(false);
+  const [suggestKey, setSuggestKey] = useState("");
+  const [suggestDesc, setSuggestDesc] = useState("");
+  const [suggestExample, setSuggestExample] = useState("");
+
   return (
     <div data-testid="wizard-step-1">
       <div className="step-title">What role did AI play?</div>
@@ -122,6 +129,73 @@ function Step1({ none, scopes, toggleScope, toggleNone, onContinue }) {
           <div className="desc">No AI involvement at any stage.</div>
         </div>
       </label>
+      <div className="scope-suggest">
+        <button
+          type="button"
+          className="link-back"
+          data-testid="wizard-suggest-scope-toggle"
+          onClick={() => setShowSuggest((prev) => !prev)}
+        >
+          {showSuggest ? "Hide scope suggestion" : "Missing a scope? Suggest one"}
+        </button>
+        {showSuggest && (
+          <div className="scope-suggest-form" data-testid="wizard-suggest-scope-form">
+            <p className="hint">
+              Propose a new scope for the schema. You&rsquo;ll open a pre-filled GitHub issue in
+              this project.
+            </p>
+            <label className="field-label" htmlFor="suggest-key">
+              Proposed key
+            </label>
+            <input
+              id="suggest-key"
+              type="text"
+              data-testid="wizard-suggest-key"
+              placeholder="e.g. translation.assisted"
+              value={suggestKey}
+              onChange={(e) => setSuggestKey(e.target.value)}
+            />
+            <label className="field-label" htmlFor="suggest-desc">
+              Description
+            </label>
+            <textarea
+              id="suggest-desc"
+              data-testid="wizard-suggest-desc"
+              rows={3}
+              placeholder="What should this scope mean?"
+              value={suggestDesc}
+              onChange={(e) => setSuggestDesc(e.target.value)}
+            />
+            <label className="field-label" htmlFor="suggest-example">
+              Example
+            </label>
+            <input
+              id="suggest-example"
+              type="text"
+              data-testid="wizard-suggest-example"
+              placeholder="e.g. asked AI to translate a quote before including it"
+              value={suggestExample}
+              onChange={(e) => setSuggestExample(e.target.value)}
+            />
+            <div className="actions end">
+              <a
+                href={buildScopeSuggestionUrl({
+                  key: suggestKey,
+                  desc: suggestDesc,
+                  example: suggestExample,
+                })}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="wizard-suggest-github"
+              >
+                <button type="button" className="primary">
+                  Open GitHub issue
+                </button>
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
       <div className="actions end">
         <button
           className="primary"
@@ -137,6 +211,11 @@ function Step1({ none, scopes, toggleScope, toggleNone, onContinue }) {
 }
 
 function Step2({ target, setTarget, onBack, onContinue }) {
+  const [touched, setTouched] = useState(false);
+  const trimmedTarget = target.trim();
+  const urlValid = isValidHttpUrl(trimmedTarget);
+  const showUrlError = touched && trimmedTarget.length > 0 && !urlValid;
+
   return (
     <div data-testid="wizard-step-2">
       <div className="step-title">Link to the article</div>
@@ -146,8 +225,15 @@ function Step2({ target, setTarget, onBack, onContinue }) {
         data-testid="wizard-article-url"
         placeholder="https://yourblog.com/your-article"
         value={target}
+        aria-invalid={showUrlError}
         onChange={(e) => setTarget(e.target.value)}
+        onBlur={() => setTouched(true)}
       />
+      {showUrlError && (
+        <p className="field-error" data-testid="wizard-article-url-error">
+          Enter a valid web URL starting with http:// or https://
+        </p>
+      )}
       <div className="actions">
         <button className="link-back" onClick={onBack}>
           &larr; Back
@@ -155,7 +241,7 @@ function Step2({ target, setTarget, onBack, onContinue }) {
         <button
           className="primary"
           data-testid="wizard-review"
-          disabled={!target}
+          disabled={!urlValid}
           onClick={onContinue}
         >
           Review
@@ -177,8 +263,8 @@ function Step3({ none, selectedKeys, target, onBack, onGenerate }) {
       </ul>
       <div className="target-line">Article: {target}</div>
       <div className="disclaimer">
-        This will generate a link readers see before reaching your article. It is self-attested only
-        &mdash; no verification is performed.
+        This will route readers through permitting your AI usage first before reaching your article.
+        It is self-attested only, and no verification is performed.
       </div>
       <div className="actions">
         <button className="link-back" onClick={onBack}>

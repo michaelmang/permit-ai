@@ -16,12 +16,12 @@ You can also connect the repo in the Vercel dashboard instead of using the GitHu
 
 ### PR wizard screenshots
 
-Every pull request triggers `.github/workflows/pr-screenshots.yml`, which:
+Every pull request that changes the React app (`app/`, `components/`, or `lib/`) triggers `.github/workflows/pr-screenshots.yml`, which:
 
 1. Builds the static site
 2. Walks the wizard with Playwright
 3. Uploads screenshots as a workflow artifact
-4. Posts inline screenshots in a PR comment (via CML)
+4. Posts inline screenshots in a PR comment (via CML `cml comment create --publish`)
 
 No extra secrets are required beyond the default `GITHUB_TOKEN`.
 
