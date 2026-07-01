@@ -5,6 +5,7 @@ import { SCOPES } from "../lib/scopes";
 import { b64encode } from "../lib/codec";
 import { buildScopeSuggestionUrl } from "../lib/github";
 import { isValidHttpUrl } from "../lib/validation";
+import { shortenUrl } from "../lib/shorten";
 
 export default function GeneratorWizard() {
   const [step, setStep] = useState(1);
@@ -52,8 +53,8 @@ export default function GeneratorWizard() {
     setGeneratedUrl("");
   }
 
-  function copyLink() {
-    navigator.clipboard.writeText(generatedUrl);
+  function copyLink(url) {
+    navigator.clipboard.writeText(url);
   }
 
   return (
@@ -280,12 +281,45 @@ function Step3({ none, selectedKeys, target, onBack, onGenerate }) {
 
 function Step4({ generatedUrl, onCopy, onStartOver }) {
   const [copied, setCopied] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const [shortening, setShortening] = useState(true);
+  const [shortenFailed, setShortenFailed] = useState(false);
+  const [showFullLink, setShowFullLink] = useState(false);
+
+  const displayUrl = shareUrl || generatedUrl;
+  const previewUrl = shareUrl || generatedUrl;
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && navigator.vibrate) {
       navigator.vibrate([30, 20, 30]);
     }
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setShareUrl("");
+    setShortening(true);
+    setShortenFailed(false);
+    setShowFullLink(false);
+
+    shortenUrl(generatedUrl)
+      .then((short) => {
+        if (!cancelled) {
+          setShareUrl(short);
+          setShortening(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setShortenFailed(true);
+          setShortening(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [generatedUrl]);
 
   return (
     <div data-testid="wizard-step-4">
@@ -302,12 +336,18 @@ function Step4({ generatedUrl, onCopy, onStartOver }) {
         Share this instead of your article link directly, and it will route readers through
         permitting your AI usage first.
       </p>
-      <label className="field-label">Consent link</label>
+      <label className="field-label">{shortenFailed ? "Consent link" : "Short link"}</label>
       <div className="link-box">
-        <input type="text" readOnly value={generatedUrl} data-testid="wizard-consent-link" />
+        <input
+          type="text"
+          readOnly
+          value={shortening ? "Creating short link…" : displayUrl}
+          data-testid="wizard-consent-link"
+        />
         <button
+          disabled={shortening}
           onClick={() => {
-            onCopy();
+            onCopy(displayUrl);
             setCopied(true);
             setTimeout(() => setCopied(false), 1400);
           }}
@@ -315,12 +355,37 @@ function Step4({ generatedUrl, onCopy, onStartOver }) {
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
+      {!shortening && !shortenFailed && (
+        <p className="hint">
+          Shortened automatically for sharing. Same consent receipt as the full link.
+        </p>
+      )}
+      {shortenFailed && (
+        <p className="hint">
+          Could not create a short link right now. Copy the full link below instead.
+        </p>
+      )}
+      <button
+        type="button"
+        className="link-back link-toggle"
+        data-testid="wizard-full-link-toggle"
+        onClick={() => setShowFullLink((prev) => !prev)}
+      >
+        {showFullLink ? "Hide full link" : "Show full link"}
+      </button>
+      {showFullLink && (
+        <div className="full-link-box">
+          <input type="text" readOnly value={generatedUrl} data-testid="wizard-full-consent-link" />
+        </div>
+      )}
       <div className="actions">
         <button className="link-back" onClick={onStartOver}>
           Start over
         </button>
-        <a href={generatedUrl} target="_blank" rel="noopener noreferrer">
-          <button className="primary">Preview as reader</button>
+        <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+          <button className="primary" disabled={shortening}>
+            Preview as reader
+          </button>
         </a>
       </div>
     </div>

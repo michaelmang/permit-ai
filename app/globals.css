@@ -276,6 +276,20 @@ button:disabled {
   flex: none;
 }
 
+.link-toggle {
+  margin-top: 12px;
+}
+
+.full-link-box {
+  margin-top: 8px;
+}
+
+.full-link-box input {
+  width: 100%;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .hint {
   font-size: 13.5px;
   color: var(--text-muted);

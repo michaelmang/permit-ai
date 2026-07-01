@@ -29,7 +29,9 @@ Static files land in `out/`.
   URL, then generate a link.
 - **Consent link** (`/?d=<encoded>`): the entire disclosure payload — scopes, note, target,
   timestamp — is base64url-encoded directly into the `d` query parameter. There is no
-  database and nothing is stored server-side; the link _is_ the receipt.
+  database and nothing is stored server-side; the link _is_ the receipt. After generation,
+  a shorter share link is created automatically via a public URL-shortening service (the
+  full link remains available in the wizard).
 - **Receipt ID**: a SHA-256 hash of the `d` payload, truncated to 8 hex characters, computed
   client-side wherever it's shown. Same payload always produces the same ID.
 - Clicking **Continue to article** on the receipt view redirects to the `target` URL. Nothing
