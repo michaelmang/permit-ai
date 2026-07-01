@@ -1,0 +1,68 @@
+name: PR wizard screenshots
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install chromium --with-deps
+      - run: npm run build
+      - run: npx serve@14 out -l 3000 > /dev/null 2>&1 &
+      - run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000 > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Static server did not start in time"
+          exit 1
+      - run: PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 npm run screenshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wizard-screenshots
+          path: screenshots/
+          if-no-files-found: error
+
+      - uses: iterative/setup-cml@v2
+      - name: Build PR comment
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "## Wizard flow screenshots"
+            echo ""
+            echo "Screenshots from each step of the link generator wizard."
+            echo ""
+            echo "### Step 1 — Scope selection"
+            cml-publish screenshots/01-step-1-scopes.png --md
+            echo ""
+            echo "### Step 2 — Article URL"
+            cml-publish screenshots/02-step-2-article.png --md
+            echo ""
+            echo "### Step 3 — Review"
+            cml-publish screenshots/03-step-3-review.png --md
+            echo ""
+            echo "### Step 4 — Link ready"
+            cml-publish screenshots/04-step-4-link-ready.png --md
+          } > report.md
+
+      - uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: report.md

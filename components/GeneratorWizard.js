@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SCOPES } from "../lib/scopes";
-import { b64encode, shortHash } from "../lib/codec";
+import { b64encode } from "../lib/codec";
 
 export default function GeneratorWizard() {
   const [step, setStep] = useState(1);
@@ -10,7 +10,6 @@ export default function GeneratorWizard() {
   const [none, setNone] = useState(false);
   const [target, setTarget] = useState("");
   const [generatedUrl, setGeneratedUrl] = useState("");
-  const [generatedRid, setGeneratedRid] = useState("");
 
   const selectedKeys = Object.keys(scopes).filter((k) => scopes[k]);
 
@@ -38,10 +37,8 @@ export default function GeneratorWizard() {
       verified: false,
     };
     const d = b64encode(payload);
-    const rid = await shortHash(d);
     const base = window.location.origin + window.location.pathname;
     setGeneratedUrl(`${base}?d=${d}`);
-    setGeneratedRid(rid);
     setStep(4);
   }
 
@@ -51,7 +48,6 @@ export default function GeneratorWizard() {
     setNone(false);
     setTarget("");
     setGeneratedUrl("");
-    setGeneratedRid("");
   }
 
   function copyLink() {
@@ -90,13 +86,7 @@ export default function GeneratorWizard() {
         />
       )}
       {step === 4 && (
-        <Step4
-          none={none}
-          generatedUrl={generatedUrl}
-          generatedRid={generatedRid}
-          onCopy={copyLink}
-          onStartOver={startOver}
-        />
+        <Step4 generatedUrl={generatedUrl} onCopy={copyLink} onStartOver={startOver} />
       )}
     </>
   );
@@ -105,7 +95,7 @@ export default function GeneratorWizard() {
 function Step1({ none, scopes, toggleScope, toggleNone, onContinue }) {
   const selectedCount = Object.values(scopes).filter(Boolean).length;
   return (
-    <>
+    <div data-testid="wizard-step-1">
       <div className="step-title">What role did AI play?</div>
       <div className="scope-list">
         {SCOPES.map((s) => (
@@ -133,37 +123,52 @@ function Step1({ none, scopes, toggleScope, toggleNone, onContinue }) {
         </div>
       </label>
       <div className="actions end">
-        <button className="primary" disabled={!none && selectedCount === 0} onClick={onContinue}>
+        <button
+          className="primary"
+          data-testid="wizard-continue"
+          disabled={!none && selectedCount === 0}
+          onClick={onContinue}
+        >
           Continue
         </button>
       </div>
-    </>
+    </div>
   );
 }
 
 function Step2({ target, setTarget, onBack, onContinue }) {
   return (
-    <>
+    <div data-testid="wizard-step-2">
       <div className="step-title">Link to the article</div>
       <p className="hint">Where should readers land after they continue?</p>
       <input
         type="url"
+        data-testid="wizard-article-url"
         placeholder="https://yourblog.com/your-article"
         value={target}
         onChange={(e) => setTarget(e.target.value)}
       />
       <div className="actions">
-        <button className="link-back" onClick={onBack}>&larr; Back</button>
-        <button className="primary" disabled={!target} onClick={onContinue}>Review</button>
+        <button className="link-back" onClick={onBack}>
+          &larr; Back
+        </button>
+        <button
+          className="primary"
+          data-testid="wizard-review"
+          disabled={!target}
+          onClick={onContinue}
+        >
+          Review
+        </button>
       </div>
-    </>
+    </div>
   );
 }
 
 function Step3({ none, selectedKeys, target, onBack, onGenerate }) {
   const items = none ? ["none"] : selectedKeys;
   return (
-    <>
+    <div data-testid="wizard-step-3">
       <div className="step-title">Confirm before generating</div>
       <ul className="review-list">
         {items.map((k) => (
@@ -172,32 +177,48 @@ function Step3({ none, selectedKeys, target, onBack, onGenerate }) {
       </ul>
       <div className="target-line">Article: {target}</div>
       <div className="disclaimer">
-        This will generate a link readers see before reaching your article. It is self-attested
-        only &mdash; no verification is performed.
+        This will generate a link readers see before reaching your article. It is self-attested only
+        &mdash; no verification is performed.
       </div>
       <div className="actions">
-        <button className="link-back" onClick={onBack}>&larr; Back</button>
-        <button className="primary" onClick={onGenerate}>Generate link</button>
+        <button className="link-back" onClick={onBack}>
+          &larr; Back
+        </button>
+        <button className="primary" data-testid="wizard-generate" onClick={onGenerate}>
+          Generate link
+        </button>
       </div>
-    </>
+    </div>
   );
 }
 
-function Step4({ none, generatedUrl, generatedRid, onCopy, onStartOver }) {
+function Step4({ generatedUrl, onCopy, onStartOver }) {
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate([30, 20, 30]);
+    }
+  }, []);
+
   return (
-    <>
-      <div className="step-title center-text">Link ready</div>
-      <div className="status-line">
-        {none ? "None" : "Disclosed"} <span className="rid">&middot; #{generatedRid}</span>
+    <div data-testid="wizard-step-4">
+      <div className="step-title center-text link-ready-title">
+        <span className="success-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle className="success-check-circle" cx="12" cy="12" r="10" />
+            <path className="success-check-mark" d="M7.5 12.5l3 3 6-7" />
+          </svg>
+        </span>
+        Link ready
       </div>
       <p className="hint center-text">
-        Share this instead of your article link directly &mdash; it routes readers through the
-        disclosure first.
+        Share this instead of your article link directly, and it will route readers through
+        permitting your AI usage first.
       </p>
       <label className="field-label">Consent link</label>
       <div className="link-box">
-        <input type="text" readOnly value={generatedUrl} />
+        <input type="text" readOnly value={generatedUrl} data-testid="wizard-consent-link" />
         <button
           onClick={() => {
             onCopy();
@@ -209,11 +230,13 @@ function Step4({ none, generatedUrl, generatedRid, onCopy, onStartOver }) {
         </button>
       </div>
       <div className="actions">
-        <button className="link-back" onClick={onStartOver}>Start over</button>
+        <button className="link-back" onClick={onStartOver}>
+          Start over
+        </button>
         <a href={generatedUrl} target="_blank" rel="noopener noreferrer">
           <button className="primary">Preview as reader</button>
         </a>
       </div>
-    </>
+    </div>
   );
 }
