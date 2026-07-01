@@ -1,4 +1,4 @@
-# AI Disclosure Consent
+# Permit AI
 
 A voluntary, self-attested disclosure tool for how AI was involved in a piece of writing —
 modeled on the visual and interaction pattern of an OAuth/MCP permission screen.
