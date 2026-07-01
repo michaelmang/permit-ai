@@ -63,9 +63,7 @@ async function captureWizardFlow(page) {
 
   await page.getByTestId("wizard-generate").click();
   await page.getByTestId("wizard-step-4").waitFor();
-  await page
-    .getByTestId("wizard-consent-link")
-    .waitFor({ state: "visible" });
+  await page.getByTestId("wizard-consent-link").waitFor({ state: "visible" });
   await page.waitForFunction(() => {
     const input = document.querySelector('[data-testid="wizard-consent-link"]');
     return input && input.value.startsWith("http");
