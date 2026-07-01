@@ -3,12 +3,15 @@
   --text: #111111;
   --text-muted: #6b7280;
   --border: #e5e7eb;
-  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --font: "Inter", system-ui, -apple-system, sans-serif;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
 }
@@ -29,7 +32,9 @@ body {
 }
 
 @media (max-width: 480px) {
-  .wrap { padding: 40px 20px 64px; }
+  .wrap {
+    padding: 40px 20px 64px;
+  }
 }
 
 .step-indicator {
@@ -108,7 +113,9 @@ h1 {
   margin: 0 0 8px;
 }
 
-textarea, input[type="url"], input[type="text"] {
+textarea,
+input[type="url"],
+input[type="text"] {
   width: 100%;
   font-family: var(--font);
   font-size: 15px;
@@ -135,7 +142,9 @@ button:focus-visible {
   gap: 12px;
 }
 
-.actions.end { justify-content: flex-end; }
+.actions.end {
+  justify-content: flex-end;
+}
 
 button {
   font-family: var(--font);
@@ -153,8 +162,12 @@ button.primary {
   color: #fff;
 }
 
-button.primary:hover { background: #333; }
-button:hover:not(.primary):not(:disabled) { background: #f5f5f5; }
+button.primary:hover {
+  background: #333;
+}
+button:hover:not(.primary):not(:disabled) {
+  background: #f5f5f5;
+}
 
 button:disabled {
   opacity: 0.4;
@@ -192,15 +205,61 @@ button:disabled {
   color: var(--text-muted);
 }
 
-.status-line {
-  text-align: center;
-  font-size: 16px;
-  margin: 8px 0 28px;
+.link-ready-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
-.status-line .rid {
-  color: var(--text-muted);
-  font-size: 14px;
+.success-check {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+
+.success-check svg {
+  width: 100%;
+  height: 100%;
+}
+
+.success-check-circle {
+  stroke: #16a34a;
+  stroke-width: 1.5;
+  fill: #f0fdf4;
+  transform-origin: center;
+  animation: success-pop 0.45s ease-out;
+}
+
+.success-check-mark {
+  stroke: #16a34a;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 18;
+  stroke-dashoffset: 18;
+  animation: success-draw 0.35s ease-out 0.2s forwards;
+}
+
+@keyframes success-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes success-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 .link-box {
