@@ -351,17 +351,20 @@ button:disabled {
 }
 
 .disclosure-badge {
-  border: 1px solid var(--border);
+  border: 2px solid var(--badge-border-color, var(--border));
   border-radius: 8px;
   padding: 16px;
   background: var(--bg);
 }
 
+.disclosure-badge--gradient {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--bg), var(--bg)) padding-box,
+    var(--badge-border-gradient) border-box;
+}
+
 .disclosure-badge-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
   margin-bottom: 12px;
 }
 
@@ -370,13 +373,6 @@ button:disabled {
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--text-muted);
-}
-
-.disclosure-badge-rid {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted);
-  flex: none;
 }
 
 .disclosure-badge-items {

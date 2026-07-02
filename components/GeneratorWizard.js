@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SCOPES } from "../lib/scopes";
-import { b64encode, b64decode, shortHash } from "../lib/codec";
+import { b64encode, b64decode } from "../lib/codec";
 import { buildConsentUrl } from "../lib/links";
 import { buildDisclosureBadgeSvg, downloadBadgeSvg } from "../lib/badge";
 import { getDisclosureItems } from "../lib/disclosure";
@@ -308,7 +308,6 @@ function Step4({ generatedRouteUrl, generatedViewUrl, encodedPayload, onCopy, on
   const [showFullRouteLink, setShowFullRouteLink] = useState(false);
   const [badgeSvg, setBadgeSvg] = useState("");
   const [badgeItems, setBadgeItems] = useState([]);
-  const [badgeRid, setBadgeRid] = useState("");
 
   const displayRouteUrl = shareRouteUrl || generatedRouteUrl;
   const displayViewUrl = shareViewUrl || generatedViewUrl;
@@ -323,19 +322,16 @@ function Step4({ generatedRouteUrl, generatedViewUrl, encodedPayload, onCopy, on
   useEffect(() => {
     let cancelled = false;
 
-    async function buildBadge() {
+    function buildBadge() {
       try {
         const payload = b64decode(encodedPayload);
-        const rid = await shortHash(encodedPayload);
         if (!cancelled) {
           setBadgeItems(getDisclosureItems(payload));
-          setBadgeRid(rid);
-          setBadgeSvg(buildDisclosureBadgeSvg(payload, rid));
+          setBadgeSvg(buildDisclosureBadgeSvg(payload));
         }
       } catch {
         if (!cancelled) {
           setBadgeItems([]);
-          setBadgeRid("");
           setBadgeSvg("");
         }
       }
@@ -518,7 +514,6 @@ function Step4({ generatedRouteUrl, generatedViewUrl, encodedPayload, onCopy, on
           <DisclosureBadge
             className="badge-preview"
             items={badgeItems}
-            rid={badgeRid}
             testId="wizard-badge-preview"
           />
         )}

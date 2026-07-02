@@ -1,20 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { b64decode, shortHash } from "../lib/codec";
+import { b64decode } from "../lib/codec";
 import { getDisclosureIntro, getDisclosureItems } from "../lib/disclosure";
 import DisclosureBadge from "./DisclosureBadge";
 
 export default function ReceiptView({ d, mode = "route" }) {
   const [payload, setPayload] = useState(null);
-  const [rid, setRid] = useState("");
   const [error, setError] = useState(false);
 
   useEffect(() => {
     try {
-      const p = b64decode(d);
-      setPayload(p);
-      shortHash(d).then(setRid);
+      setPayload(b64decode(d));
     } catch (e) {
       setError(true);
     }
@@ -40,7 +37,7 @@ export default function ReceiptView({ d, mode = "route" }) {
     <div data-testid="reader-receipt">
       <h1 className="disclosure-intro">{getDisclosureIntro(payload)}</h1>
 
-      <DisclosureBadge items={disclosureItems} rid={rid} testId="reader-disclosure-badge" />
+      <DisclosureBadge items={disclosureItems} testId="reader-disclosure-badge" />
 
       {payload.note && <p className="hint disclosure-note">&ldquo;{payload.note}&rdquo;</p>}
 
