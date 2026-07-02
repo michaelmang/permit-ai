@@ -2,7 +2,7 @@
 
 ## Cursor Cloud specific instructions
 
-Permit AI is a single **Next.js 14 (App Router)** front-end app with **no backend**. It generates a self-attested AI-disclosure consent link entirely client-side (the payload is base64url-encoded into the `?d=` query param; the receipt id is a client-side SHA-256 hash). See `README.md` for the product overview and architecture.
+Permit AI is a **Next.js 14 (App Router)** app. Disclosure payloads are encoded client-side into the `?d=` query param. On Vercel, optional edge API routes (`/api/shorten`, `/r/:id`) provide branded short links via Upstash Redis; local dev falls back to TinyURL. See `README.md` and `.github/SETUP.md`.
 
 - **Package manager:** npm (`package-lock.json`). Dependencies are refreshed by the startup update script (`npm install`).
 - **Run (dev):** `npm run dev` serves the app at http://localhost:3000. This is the only service.
