@@ -2,5 +2,10 @@
   "buildCommand": "npm run build",
   "outputDirectory": "out",
   "framework": null,
-  "rewrites": [{ "source": "/r/:id", "destination": "/api/r/:id" }]
+  "rewrites": [{ "source": "/r/:id", "destination": "/api/r/:id?id=:id" }],
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 10
+    }
+  }
 }

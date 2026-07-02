@@ -10,15 +10,17 @@ Add these GitHub repository secrets (Settings → Secrets and variables → Acti
 | `VERCEL_ORG_ID`     | Vercel project → Settings → General → Team / Personal ID   |
 | `VERCEL_PROJECT_ID` | Vercel project → Settings → General → Project ID           |
 
-The app is a static export (`out/`). `vercel.json` points Vercel at that output and adds two edge API routes for custom short links (`/api/shorten`, `/r/:id`).
+The app is a static export (`out/`). `vercel.json` points Vercel at that output and adds two serverless API routes for custom short links (`/api/shorten`, `/r/:id`).
 
-Set `NEXT_PUBLIC_SITE_URL` to your production URL (e.g. `https://your-app.vercel.app`) in Vercel project environment variables so Open Graph images and short-link validation resolve correctly.
+`NEXT_PUBLIC_SITE_URL` is optional. Open Graph images use it when set; short links derive the host from each request so preview deployments work without a separate env var.
 
 ### Custom short links (Upstash Redis)
 
 Install **Upstash for Redis** from the [Vercel Marketplace](https://vercel.com/marketplace/upstash) and connect it to the project. Vercel injects `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` automatically.
 
-- Production: `POST /api/shorten` stores the full consent URL and returns `https://yoursite.com/r/<id>`
+**Important:** In the Upstash integration settings, enable the Redis env vars for **Preview** as well as Production — otherwise preprod/PR deployments return `503 Shortener unavailable` and fall back to TinyURL.
+
+- Production / preview: `POST /api/shorten` stores the full consent URL and returns `https://<current-host>/r/<id>`
 - Redirect: `/r/<id>` → full `/?d=...` URL (302)
 - Local dev (`localhost` / `127.0.0.1`): falls back to TinyURL so no Redis is required
 
@@ -30,7 +32,7 @@ Install **Upstash for Redis** from the [Vercel Marketplace](https://vercel.com/m
 | 10K links + 100K clicks | ~130K          | $0                              |
 | 50K links + 500K clicks | ~650K          | ~$0.30 overage on pay-as-you-go |
 
-Vercel Edge Function invocations for `/api/shorten` and `/r/:id` are negligible on Hobby/Pro included limits.
+Vercel serverless function invocations for `/api/shorten` and `/r/:id` are negligible on Hobby/Pro included limits.
 
 **Abuse controls on `/api/shorten`:** same-origin check (Origin/Referer), target URL must be on your site with a `?d=` payload, 20 requests/hour per IP via Redis rate limiting.
 

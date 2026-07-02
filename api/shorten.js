@@ -7,12 +7,8 @@ import {
   RATE_LIMIT_PREFIX,
   SHORT_LINK_PREFIX,
   validateConsentUrl,
-} from "../lib/shortLink.js";
-import { getRedis } from "../lib/redis.js";
-
-export const config = {
-  runtime: "edge",
-};
+} from "../lib/shortLink";
+import { getRedis } from "../lib/redis";
 
 async function isRateLimited(redis, ip) {
   const key = `${RATE_LIMIT_PREFIX}${ip}`;
@@ -23,49 +19,50 @@ async function isRateLimited(redis, ip) {
   return count > RATE_LIMIT_MAX_PER_HOUR;
 }
 
-export default async function handler(request) {
-  if (request.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const redis = getRedis();
   if (!redis) {
-    return Response.json({ error: "Shortener unavailable" }, { status: 503 });
+    return res.status(503).json({ error: "Shortener unavailable" });
   }
 
-  const siteOrigin = getSiteOriginFromRequest(request);
+  const siteOrigin = getSiteOriginFromRequest(req);
   if (!siteOrigin) {
-    return Response.json({ error: "Could not resolve site origin" }, { status: 500 });
+    return res.status(500).json({ error: "Could not resolve site origin" });
   }
 
-  if (!isAllowedBrowserRequest(request, siteOrigin)) {
-    return Response.json({ error: "Forbidden" }, { status: 403 });
+  if (!isAllowedBrowserRequest(req, siteOrigin)) {
+    return res.status(403).json({ error: "Forbidden" });
   }
 
-  const ip = getClientIp(request);
+  const ip = getClientIp(req);
   if (await isRateLimited(redis, ip)) {
-    return Response.json({ error: "Rate limit exceeded" }, { status: 429 });
+    return res.status(429).json({ error: "Rate limit exceeded" });
   }
 
-  let body;
+  let targetUrl;
   try {
-    body = await request.json();
+    const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body ?? {});
+    targetUrl = body.url;
   } catch {
-    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+    return res.status(400).json({ error: "Invalid JSON body" });
   }
 
-  const validation = validateConsentUrl(body?.url, siteOrigin);
+  const validation = validateConsentUrl(targetUrl, siteOrigin);
   if (!validation.ok) {
-    return Response.json({ error: validation.reason }, { status: 400 });
+    return res.status(400).json({ error: validation.reason });
   }
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const id = createShortId();
-    const created = await redis.set(`${SHORT_LINK_PREFIX}${id}`, body.url, { nx: true });
+    const created = await redis.set(`${SHORT_LINK_PREFIX}${id}`, targetUrl, { nx: true });
     if (created === "OK") {
-      return Response.json({ shortUrl: `${siteOrigin}/r/${id}` });
+      return res.status(200).json({ shortUrl: `${siteOrigin}/r/${id}` });
     }
   }
 
-  return Response.json({ error: "Could not allocate short link" }, { status: 500 });
+  return res.status(500).json({ error: "Could not allocate short link" });
 }
