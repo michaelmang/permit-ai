@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { SCOPES } from "../lib/scopes";
 import { b64encode, b64decode, shortHash } from "../lib/codec";
 import { buildConsentUrl } from "../lib/links";
-import { buildDisclosureBadgeSvg, badgeSvgToDataUri, downloadBadgeSvg } from "../lib/badge";
+import { buildDisclosureBadgeSvg, downloadBadgeSvg } from "../lib/badge";
+import { getDisclosureItems } from "../lib/disclosure";
+import DisclosureBadge from "./DisclosureBadge";
 import { buildScopeSuggestionUrl } from "../lib/github";
 import { isValidHttpUrl } from "../lib/validation";
 import { shortenUrl } from "../lib/shorten";
@@ -305,6 +307,8 @@ function Step4({ generatedRouteUrl, generatedViewUrl, encodedPayload, onCopy, on
   const [viewShortenFailed, setViewShortenFailed] = useState(false);
   const [showFullRouteLink, setShowFullRouteLink] = useState(false);
   const [badgeSvg, setBadgeSvg] = useState("");
+  const [badgeItems, setBadgeItems] = useState([]);
+  const [badgeRid, setBadgeRid] = useState("");
 
   const displayRouteUrl = shareRouteUrl || generatedRouteUrl;
   const displayViewUrl = shareViewUrl || generatedViewUrl;
@@ -323,9 +327,17 @@ function Step4({ generatedRouteUrl, generatedViewUrl, encodedPayload, onCopy, on
       try {
         const payload = b64decode(encodedPayload);
         const rid = await shortHash(encodedPayload);
-        if (!cancelled) setBadgeSvg(buildDisclosureBadgeSvg(payload, rid));
+        if (!cancelled) {
+          setBadgeItems(getDisclosureItems(payload));
+          setBadgeRid(rid);
+          setBadgeSvg(buildDisclosureBadgeSvg(payload, rid));
+        }
       } catch {
-        if (!cancelled) setBadgeSvg("");
+        if (!cancelled) {
+          setBadgeItems([]);
+          setBadgeRid("");
+          setBadgeSvg("");
+        }
       }
     }
 
@@ -486,14 +498,12 @@ function Step4({ generatedRouteUrl, generatedViewUrl, encodedPayload, onCopy, on
           Download the SVG and upload it to your post. On Substack, add the image then link it to
           your disclosure URL above.
         </p>
-        {badgeSvg && (
-          <img
+        {badgeItems.length > 0 && (
+          <DisclosureBadge
             className="badge-preview"
-            data-testid="wizard-badge-preview"
-            src={badgeSvgToDataUri(badgeSvg)}
-            alt="AI disclosure badge preview"
-            width={320}
-            height={64}
+            items={badgeItems}
+            rid={badgeRid}
+            testId="wizard-badge-preview"
           />
         )}
         <div className="badge-actions">

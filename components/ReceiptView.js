@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SCOPES } from "../lib/scopes";
 import { b64decode, shortHash } from "../lib/codec";
+import { getDisclosureIntro, getDisclosureItems } from "../lib/disclosure";
+import DisclosureBadge from "./DisclosureBadge";
 
 export default function ReceiptView({ d, mode = "route" }) {
   const [payload, setPayload] = useState(null);
@@ -33,40 +34,15 @@ export default function ReceiptView({ d, mode = "route" }) {
   }
 
   const isViewMode = mode === "view";
-  const isNone = payload.none === true;
-  const scopeItems = isNone
-    ? []
-    : (payload.scopes || []).map((k) => SCOPES.find((s) => s.key === k)).filter(Boolean);
+  const disclosureItems = getDisclosureItems(payload);
 
   return (
     <>
-      <h1>
-        {isViewMode
-          ? isNone
-            ? "No AI was used in this piece"
-            : "How AI was used in this piece"
-          : isNone
-            ? "No AI was used"
-            : "How AI was used"}
-      </h1>
+      <h1 className="disclosure-intro">{getDisclosureIntro(payload)}</h1>
 
-      <div className="status-line">
-        {isNone ? "None" : "Disclosed"} <span className="rid">&middot; #{rid}</span>
-      </div>
+      <DisclosureBadge items={disclosureItems} rid={rid} />
 
-      {isNone ? (
-        <p className="hint center-text">
-          The author attests this piece was written without AI involvement at any stage.
-        </p>
-      ) : (
-        <ul className="review-list">
-          {scopeItems.map((s) => (
-            <li key={s.key}>{s.key}</li>
-          ))}
-        </ul>
-      )}
-
-      {payload.note && <p className="hint">&ldquo;{payload.note}&rdquo;</p>}
+      {payload.note && <p className="hint disclosure-note">&ldquo;{payload.note}&rdquo;</p>}
 
       <div className="disclaimer">
         Self-attested. Not independently verified. This receipt records only what the author

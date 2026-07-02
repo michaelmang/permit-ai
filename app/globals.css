@@ -342,6 +342,77 @@ button:disabled {
   text-align: center;
 }
 
+.disclosure-intro {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 0 0 24px;
+  letter-spacing: -0.01em;
+}
+
+.disclosure-badge {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.disclosure-badge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.disclosure-badge-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.disclosure-badge-rid {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  flex: none;
+}
+
+.disclosure-badge-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.disclosure-badge-item {
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.disclosure-badge-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.disclosure-badge-key {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.disclosure-badge-desc {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+.disclosure-note {
+  margin-top: 20px;
+}
+
 .output-section {
   margin-top: 32px;
   padding-top: 24px;
@@ -363,17 +434,8 @@ button:disabled {
 }
 
 .badge-preview {
-  display: block;
   margin: 12px 0;
-  max-width: 320px;
-  width: 100%;
-  height: auto;
-}
-
-.badge-preview svg {
-  display: block;
-  width: 100%;
-  height: auto;
+  max-width: 480px;
 }
 
 .badge-actions {
