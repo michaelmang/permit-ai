@@ -12,6 +12,8 @@ Add these GitHub repository secrets (Settings → Secrets and variables → Acti
 
 The app is a static export (`out/`). `vercel.json` points Vercel at that output.
 
+Set `NEXT_PUBLIC_SITE_URL` to your production URL (e.g. `https://your-app.vercel.app`) in Vercel project environment variables so Open Graph and Twitter preview images resolve correctly when links are shared.
+
 You can also connect the repo in the Vercel dashboard instead of using the GitHub Action; if you do, disable `.github/workflows/deploy-vercel.yml` to avoid double deploys.
 
 ### PR wizard screenshots

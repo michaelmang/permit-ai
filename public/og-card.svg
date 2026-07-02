@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Permit AI  AI usage disclosure for writing">
+  <defs>
+    <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="17%" stop-color="#7c3aed" />
+      <stop offset="33%" stop-color="#ea580c" />
+      <stop offset="50%" stop-color="#0d9488" />
+      <stop offset="67%" stop-color="#d97706" />
+      <stop offset="83%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#db2777" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#ffffff" />
+  <rect x="199.5" y="114.5" width="801" height="401" rx="16" fill="#ffffff" stroke="url(#border)" stroke-width="3" />
+  <text
+    x="240"
+    y="200"
+    font-family="Inter, system-ui, -apple-system, sans-serif"
+    font-size="28"
+    font-weight="600"
+    letter-spacing="0.02em"
+    fill="#6b7280"
+  >Here's how I used AI</text>
+  <text
+    x="240"
+    y="270"
+    font-family="Inter, system-ui, -apple-system, sans-serif"
+    font-size="52"
+    font-weight="600"
+    fill="#111111"
+  >Permit AI</text>
+  <text
+    x="240"
+    y="340"
+    font-family="Inter, system-ui, -apple-system, sans-serif"
+    font-size="32"
+    font-weight="400"
+    fill="#6b7280"
+  >A voluntary, self-attested disclosure tool for how AI was</text>
+  <text
+    x="240"
+    y="385"
+    font-family="Inter, system-ui, -apple-system, sans-serif"
+    font-size="32"
+    font-weight="400"
+    fill="#6b7280"
+  >involved in a piece of writing.</text>
+</svg>

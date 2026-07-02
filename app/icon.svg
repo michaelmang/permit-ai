@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Permit AI">
+  <defs>
+    <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="17%" stop-color="#7c3aed" />
+      <stop offset="33%" stop-color="#ea580c" />
+      <stop offset="50%" stop-color="#0d9488" />
+      <stop offset="67%" stop-color="#d97706" />
+      <stop offset="83%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#db2777" />
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="#ffffff" stroke="url(#border)" stroke-width="2" />
+  <path
+    d="M9 16.5l4 3.5 10-11"
+    fill="none"
+    stroke="#111111"
+    stroke-width="2.25"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
