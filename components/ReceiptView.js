@@ -1,19 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SCOPES } from "../lib/scopes";
-import { b64decode, shortHash } from "../lib/codec";
+import { b64decode } from "../lib/codec";
+import { getDisclosureIntro, getDisclosureItems } from "../lib/disclosure";
+import DisclosureBadge from "./DisclosureBadge";
 
-export default function ReceiptView({ d }) {
+export default function ReceiptView({ d, mode = "route" }) {
   const [payload, setPayload] = useState(null);
-  const [rid, setRid] = useState("");
   const [error, setError] = useState(false);
 
   useEffect(() => {
     try {
-      const p = b64decode(d);
-      setPayload(p);
-      shortHash(d).then(setRid);
+      setPayload(b64decode(d));
     } catch (e) {
       setError(true);
     }
@@ -32,48 +30,43 @@ export default function ReceiptView({ d }) {
     return <h1>Loading&hellip;</h1>;
   }
 
-  const isNone = payload.none === true;
-  const scopeItems = isNone
-    ? []
-    : (payload.scopes || []).map((k) => SCOPES.find((s) => s.key === k)).filter(Boolean);
+  const isViewMode = mode === "view";
+  const disclosureItems = getDisclosureItems(payload);
 
   return (
-    <>
-      <h1>{isNone ? "No AI was used" : "How AI was used"}</h1>
+    <div data-testid="reader-receipt">
+      <h1 className="disclosure-intro">{getDisclosureIntro(payload)}</h1>
 
-      <div className="status-line">
-        {isNone ? "None" : "Disclosed"} <span className="rid">&middot; #{rid}</span>
-      </div>
+      <DisclosureBadge items={disclosureItems} testId="reader-disclosure-badge" />
 
-      {isNone ? (
-        <p className="hint center-text">
-          The author attests this piece was written without AI involvement at any stage.
-        </p>
-      ) : (
-        <ul className="review-list">
-          {scopeItems.map((s) => (
-            <li key={s.key}>{s.key}</li>
-          ))}
-        </ul>
-      )}
-
-      {payload.note && <p className="hint">&ldquo;{payload.note}&rdquo;</p>}
+      {payload.note && <p className="hint disclosure-note">&ldquo;{payload.note}&rdquo;</p>}
 
       <div className="disclaimer">
         Self-attested. Not independently verified. This receipt records only what the author
         reported checking, and carries no cryptographic or platform guarantee.
       </div>
 
-      {payload.target && <div className="target-line">Continuing to: {payload.target}</div>}
+      {!isViewMode && payload.target && (
+        <div className="target-line">Continuing to: {payload.target}</div>
+      )}
 
-      <button
-        className="primary continue-btn"
-        onClick={() => {
-          if (payload.target) window.location.href = payload.target;
-        }}
-      >
-        Continue to article
-      </button>
-    </>
+      {isViewMode ? (
+        payload.target && (
+          <a className="article-link" href={payload.target} data-testid="reader-open-article">
+            Open article &rarr;
+          </a>
+        )
+      ) : (
+        <button
+          className="primary continue-btn"
+          data-testid="reader-continue"
+          onClick={() => {
+            if (payload.target) window.location.href = payload.target;
+          }}
+        >
+          Continue to article
+        </button>
+      )}
+    </div>
   );
 }

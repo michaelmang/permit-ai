@@ -72,6 +72,19 @@ async function captureWizardFlow(page) {
     path: path.join(OUTPUT_DIR, "04-step-4-link-ready.png"),
     fullPage: true,
   });
+
+  return {
+    routeUrl: await page.getByTestId("wizard-full-route-url").inputValue(),
+    viewUrl: await page.getByTestId("wizard-full-view-url").inputValue(),
+  };
+}
+
+async function captureReaderPreview(page, url, screenshotPath, continueTestId) {
+  await page.goto(url);
+  await page.getByTestId("reader-receipt").waitFor();
+  await page.getByTestId("reader-disclosure-badge").waitFor();
+  await page.getByTestId(continueTestId).waitFor();
+  await page.screenshot({ path: screenshotPath, fullPage: true });
 }
 
 async function main() {
@@ -87,7 +100,21 @@ async function main() {
   const page = await browser.newPage();
 
   try {
-    await captureWizardFlow(page);
+    const { routeUrl, viewUrl } = await captureWizardFlow(page);
+
+    await captureReaderPreview(
+      page,
+      routeUrl,
+      path.join(OUTPUT_DIR, "05-reader-route.png"),
+      "reader-continue",
+    );
+    await captureReaderPreview(
+      page,
+      viewUrl,
+      path.join(OUTPUT_DIR, "06-reader-view.png"),
+      "reader-open-article",
+    );
+
     await writeFile(
       path.join(OUTPUT_DIR, "manifest.json"),
       JSON.stringify(
@@ -98,13 +125,15 @@ async function main() {
             { file: "02-step-2-article.png", title: "Step 2 — Article URL" },
             { file: "03-step-3-review.png", title: "Step 3 — Review" },
             { file: "04-step-4-link-ready.png", title: "Step 4 — Link ready" },
+            { file: "05-reader-route.png", title: "Reader — Routed preview" },
+            { file: "06-reader-view.png", title: "Reader — View mode preview" },
           ],
         },
         null,
         2,
       ),
     );
-    console.log("Wizard screenshots saved to screenshots/");
+    console.log("Wizard and reader screenshots saved to screenshots/");
   } finally {
     await browser.close();
     if (server) {

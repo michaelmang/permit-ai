@@ -1,9 +1,36 @@
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
+import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from "../lib/brand";
+
+const siteUrl = getSiteUrl();
 
 export const metadata = {
-  title: "AI Disclosure Consent",
-  description: "A voluntary, self-attested disclosure receipt for AI involvement in writing.",
+  metadataBase: new URL(siteUrl),
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  icons: {
+    icon: "/icon.svg",
+  },
+  openGraph: {
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    type: "website",
+    siteName: SITE_NAME,
+    images: [
+      {
+        url: "/og-card.svg",
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: ["/og-card.svg"],
+  },
 };
 
 export default function RootLayout({ children }) {

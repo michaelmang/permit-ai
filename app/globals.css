@@ -341,3 +341,112 @@ button:disabled {
 .center-text {
   text-align: center;
 }
+
+.disclosure-intro {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 0 0 24px;
+  letter-spacing: -0.01em;
+}
+
+.disclosure-badge {
+  border: 2px solid var(--badge-border-color, var(--border));
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--bg);
+}
+
+.disclosure-badge--gradient {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--bg), var(--bg)) padding-box,
+    var(--badge-border-gradient) border-box;
+}
+
+.disclosure-badge-header {
+  margin-bottom: 12px;
+}
+
+.disclosure-badge-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.disclosure-badge-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.disclosure-badge-item {
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.disclosure-badge-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.disclosure-badge-key {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.disclosure-badge-desc {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+.disclosure-note {
+  margin-top: 20px;
+}
+
+.output-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.output-heading {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.field-hint {
+  margin: 0 0 10px;
+}
+
+.badge-label {
+  margin-top: 24px;
+}
+
+.badge-preview {
+  margin: 12px 0;
+  max-width: 480px;
+}
+
+.badge-actions {
+  margin-top: 8px;
+}
+
+.article-link {
+  display: inline-block;
+  margin-top: 24px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.article-link:hover {
+  color: #333;
+}
