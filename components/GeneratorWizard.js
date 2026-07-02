@@ -406,6 +406,22 @@ function Step4({ generatedRouteUrl, generatedViewUrl, encodedPayload, onCopy, on
 
   return (
     <div data-testid="wizard-step-4">
+      <input
+        type="hidden"
+        data-testid="wizard-full-route-url"
+        value={generatedRouteUrl}
+        readOnly
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+      <input
+        type="hidden"
+        data-testid="wizard-full-view-url"
+        value={generatedViewUrl}
+        readOnly
+        tabIndex={-1}
+        aria-hidden="true"
+      />
       <div className="step-title center-text link-ready-title">
         <span className="success-check" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">

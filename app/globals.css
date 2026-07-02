@@ -351,10 +351,10 @@ button:disabled {
 }
 
 .disclosure-badge {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px;
-  background: #ffffff;
+  background: var(--bg);
 }
 
 .disclosure-badge-header {

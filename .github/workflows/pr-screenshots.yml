@@ -52,9 +52,9 @@ jobs:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           {
-            echo "## Wizard flow screenshots"
+            echo "## Wizard and reader flow screenshots"
             echo ""
-            echo "Screenshots from each step of the link generator wizard."
+            echo "Screenshots from each step of the link generator wizard and the reader receipt views."
             echo ""
             echo "### Step 1 — Scope selection"
             echo "![](./screenshots/01-step-1-scopes.png)"
@@ -67,5 +67,11 @@ jobs:
             echo ""
             echo "### Step 4 — Link ready"
             echo "![](./screenshots/04-step-4-link-ready.png)"
+            echo ""
+            echo "### Reader — Routed preview"
+            echo "![](./screenshots/05-reader-route.png)"
+            echo ""
+            echo "### Reader — View mode preview"
+            echo "![](./screenshots/06-reader-view.png)"
           } > report.md
           cml comment create --publish report.md

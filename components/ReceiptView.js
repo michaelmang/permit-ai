@@ -37,10 +37,10 @@ export default function ReceiptView({ d, mode = "route" }) {
   const disclosureItems = getDisclosureItems(payload);
 
   return (
-    <>
+    <div data-testid="reader-receipt">
       <h1 className="disclosure-intro">{getDisclosureIntro(payload)}</h1>
 
-      <DisclosureBadge items={disclosureItems} rid={rid} />
+      <DisclosureBadge items={disclosureItems} rid={rid} testId="reader-disclosure-badge" />
 
       {payload.note && <p className="hint disclosure-note">&ldquo;{payload.note}&rdquo;</p>}
 
@@ -55,13 +55,14 @@ export default function ReceiptView({ d, mode = "route" }) {
 
       {isViewMode ? (
         payload.target && (
-          <a className="article-link" href={payload.target}>
+          <a className="article-link" href={payload.target} data-testid="reader-open-article">
             Open article &rarr;
           </a>
         )
       ) : (
         <button
           className="primary continue-btn"
+          data-testid="reader-continue"
           onClick={() => {
             if (payload.target) window.location.href = payload.target;
           }}
@@ -69,6 +70,6 @@ export default function ReceiptView({ d, mode = "route" }) {
           Continue to article
         </button>
       )}
-    </>
+    </div>
   );
 }
