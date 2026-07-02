@@ -1,4 +1,4 @@
-import {
+const {
   createShortId,
   getClientIp,
   getSiteOriginFromRequest,
@@ -7,8 +7,8 @@ import {
   RATE_LIMIT_PREFIX,
   SHORT_LINK_PREFIX,
   validateConsentUrl,
-} from "../lib/shortLink";
-import { getRedis } from "../lib/redis";
+} = require("./lib/shortLinkServer.js");
+const { getRedis } = require("./lib/redis.js");
 
 async function isRateLimited(redis, ip) {
   const key = `${RATE_LIMIT_PREFIX}${ip}`;
@@ -19,50 +19,83 @@ async function isRateLimited(redis, ip) {
   return count > RATE_LIMIT_MAX_PER_HOUR;
 }
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  const redis = getRedis();
-  if (!redis) {
-    return res.status(503).json({ error: "Shortener unavailable" });
-  }
-
-  const siteOrigin = getSiteOriginFromRequest(req);
-  if (!siteOrigin) {
-    return res.status(500).json({ error: "Could not resolve site origin" });
-  }
-
-  if (!isAllowedBrowserRequest(req, siteOrigin)) {
-    return res.status(403).json({ error: "Forbidden" });
-  }
-
-  const ip = getClientIp(req);
-  if (await isRateLimited(redis, ip)) {
-    return res.status(429).json({ error: "Rate limit exceeded" });
-  }
-
-  let targetUrl;
+module.exports = async function handler(req, res) {
   try {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body ?? {});
-    targetUrl = body.url;
-  } catch {
-    return res.status(400).json({ error: "Invalid JSON body" });
-  }
-
-  const validation = validateConsentUrl(targetUrl, siteOrigin);
-  if (!validation.ok) {
-    return res.status(400).json({ error: validation.reason });
-  }
-
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    const id = createShortId();
-    const created = await redis.set(`${SHORT_LINK_PREFIX}${id}`, targetUrl, { nx: true });
-    if (created === "OK") {
-      return res.status(200).json({ shortUrl: `${siteOrigin}/r/${id}` });
+    if (req.method !== "POST") {
+      res.statusCode = 405;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: "Method not allowed" }));
+      return;
     }
-  }
 
-  return res.status(500).json({ error: "Could not allocate short link" });
-}
+    const redis = getRedis();
+    if (!redis) {
+      res.statusCode = 503;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: "Shortener unavailable" }));
+      return;
+    }
+
+    const siteOrigin = getSiteOriginFromRequest(req);
+    if (!siteOrigin) {
+      res.statusCode = 500;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: "Could not resolve site origin" }));
+      return;
+    }
+
+    if (!isAllowedBrowserRequest(req, siteOrigin)) {
+      res.statusCode = 403;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: "Forbidden" }));
+      return;
+    }
+
+    const ip = getClientIp(req);
+    if (await isRateLimited(redis, ip)) {
+      res.statusCode = 429;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: "Rate limit exceeded" }));
+      return;
+    }
+
+    let targetUrl;
+    try {
+      const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body ?? {});
+      targetUrl = body.url;
+    } catch {
+      res.statusCode = 400;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: "Invalid JSON body" }));
+      return;
+    }
+
+    const validation = validateConsentUrl(targetUrl, siteOrigin);
+    if (!validation.ok) {
+      res.statusCode = 400;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: validation.reason }));
+      return;
+    }
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const id = createShortId();
+      const created = await redis.set(`${SHORT_LINK_PREFIX}${id}`, targetUrl, { nx: true });
+      if (created) {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ shortUrl: `${siteOrigin}/r/${id}` }));
+        return;
+      }
+    }
+
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ error: "Could not allocate short link" }));
+  } catch (error) {
+    console.error("shorten handler error:", error);
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ error: "Internal server error" }));
+  }
+};

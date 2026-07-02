@@ -1,4 +1,4 @@
-import { Redis } from "@upstash/redis";
+const { Redis } = require("@upstash/redis");
 
 let redis;
 
@@ -9,7 +9,7 @@ function getRedisConfig() {
   return { url, token };
 }
 
-export function getRedis() {
+function getRedis() {
   const config = getRedisConfig();
   if (!config) return null;
 
@@ -20,6 +20,4 @@ export function getRedis() {
   return redis;
 }
 
-export function isRedisConfigured() {
-  return getRedisConfig() !== null;
-}
+module.exports = { getRedis };
