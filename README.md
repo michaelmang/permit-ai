@@ -32,6 +32,11 @@ Static files land in `out/`.
   database and nothing is stored server-side; the link _is_ the receipt. After generation,
   a shorter share link is created automatically via a public URL-shortening service (the
   full link remains available in the wizard).
+- **View mode** (`/?d=<encoded>&m=view`): same receipt, presented for readers who are
+  already on the article — no forced redirect, with an optional link back to the article.
+- **Article artifacts**: Step 4 also generates a disclosure link (view mode) and a
+  downloadable SVG badge for placing on the article page (e.g. upload to Substack and link
+  to the disclosure URL).
 - **Receipt ID**: a SHA-256 hash of the `d` payload, truncated to 8 hex characters, computed
   client-side wherever it's shown. Same payload always produces the same ID.
 - Clicking **Continue to article** on the receipt view redirects to the `target` URL. Nothing
@@ -39,7 +44,6 @@ Static files land in `out/`.
 
 ## Not included yet
 
-- Badge (SVG) generation — deprioritized for MVP.
 - Any kind of consent-count dashboard — this would require a backend to record consent
   events, which is a deliberate departure from the zero-backend design of the rest of the
   tool. Worth designing separately when you get there.

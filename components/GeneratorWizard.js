@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { SCOPES } from "../lib/scopes";
-import { b64encode } from "../lib/codec";
+import { b64encode, b64decode, shortHash } from "../lib/codec";
+import { buildConsentUrl } from "../lib/links";
+import { buildDisclosureBadgeSvg, downloadBadgeSvg } from "../lib/badge";
 import { buildScopeSuggestionUrl } from "../lib/github";
 import { isValidHttpUrl } from "../lib/validation";
 import { shortenUrl } from "../lib/shorten";
@@ -12,7 +14,9 @@ export default function GeneratorWizard() {
   const [scopes, setScopes] = useState({});
   const [none, setNone] = useState(false);
   const [target, setTarget] = useState("");
-  const [generatedUrl, setGeneratedUrl] = useState("");
+  const [generatedRouteUrl, setGeneratedRouteUrl] = useState("");
+  const [generatedViewUrl, setGeneratedViewUrl] = useState("");
+  const [encodedPayload, setEncodedPayload] = useState("");
 
   const selectedKeys = Object.keys(scopes).filter((k) => scopes[k]);
 
@@ -40,8 +44,11 @@ export default function GeneratorWizard() {
       verified: false,
     };
     const d = b64encode(payload);
-    const base = window.location.origin + window.location.pathname;
-    setGeneratedUrl(`${base}?d=${d}`);
+    const origin = window.location.origin;
+    const pathname = window.location.pathname;
+    setEncodedPayload(d);
+    setGeneratedRouteUrl(buildConsentUrl(origin, pathname, d));
+    setGeneratedViewUrl(buildConsentUrl(origin, pathname, d, { mode: "view" }));
     setStep(4);
   }
 
@@ -50,7 +57,9 @@ export default function GeneratorWizard() {
     setScopes({});
     setNone(false);
     setTarget("");
-    setGeneratedUrl("");
+    setGeneratedRouteUrl("");
+    setGeneratedViewUrl("");
+    setEncodedPayload("");
   }
 
   function copyLink(url) {
@@ -89,7 +98,13 @@ export default function GeneratorWizard() {
         />
       )}
       {step === 4 && (
-        <Step4 generatedUrl={generatedUrl} onCopy={copyLink} onStartOver={startOver} />
+        <Step4
+          generatedRouteUrl={generatedRouteUrl}
+          generatedViewUrl={generatedViewUrl}
+          encodedPayload={encodedPayload}
+          onCopy={copyLink}
+          onStartOver={startOver}
+        />
       )}
     </>
   );
@@ -279,15 +294,21 @@ function Step3({ none, selectedKeys, target, onBack, onGenerate }) {
   );
 }
 
-function Step4({ generatedUrl, onCopy, onStartOver }) {
-  const [copied, setCopied] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
-  const [shortening, setShortening] = useState(true);
-  const [shortenFailed, setShortenFailed] = useState(false);
-  const [showFullLink, setShowFullLink] = useState(false);
+function Step4({ generatedRouteUrl, generatedViewUrl, encodedPayload, onCopy, onStartOver }) {
+  const [routeCopied, setRouteCopied] = useState(false);
+  const [viewCopied, setViewCopied] = useState(false);
+  const [shareRouteUrl, setShareRouteUrl] = useState("");
+  const [shareViewUrl, setShareViewUrl] = useState("");
+  const [routeShortening, setRouteShortening] = useState(true);
+  const [viewShortening, setViewShortening] = useState(true);
+  const [routeShortenFailed, setRouteShortenFailed] = useState(false);
+  const [viewShortenFailed, setViewShortenFailed] = useState(false);
+  const [showFullRouteLink, setShowFullRouteLink] = useState(false);
+  const [badgeSvg, setBadgeSvg] = useState("");
 
-  const displayUrl = shareUrl || generatedUrl;
-  const previewUrl = shareUrl || generatedUrl;
+  const displayRouteUrl = shareRouteUrl || generatedRouteUrl;
+  const displayViewUrl = shareViewUrl || generatedViewUrl;
+  const previewRouteUrl = shareRouteUrl || generatedRouteUrl;
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && navigator.vibrate) {
@@ -297,29 +318,79 @@ function Step4({ generatedUrl, onCopy, onStartOver }) {
 
   useEffect(() => {
     let cancelled = false;
-    setShareUrl("");
-    setShortening(true);
-    setShortenFailed(false);
-    setShowFullLink(false);
 
-    shortenUrl(generatedUrl)
+    async function buildBadge() {
+      try {
+        const payload = b64decode(encodedPayload);
+        const rid = await shortHash(encodedPayload);
+        if (!cancelled) setBadgeSvg(buildDisclosureBadgeSvg(payload, rid));
+      } catch {
+        if (!cancelled) setBadgeSvg("");
+      }
+    }
+
+    if (encodedPayload) buildBadge();
+    return () => {
+      cancelled = true;
+    };
+  }, [encodedPayload]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setShareRouteUrl("");
+    setRouteShortening(true);
+    setRouteShortenFailed(false);
+    setShowFullRouteLink(false);
+
+    shortenUrl(generatedRouteUrl)
       .then((short) => {
         if (!cancelled) {
-          setShareUrl(short);
-          setShortening(false);
+          setShareRouteUrl(short);
+          setRouteShortening(false);
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setShortenFailed(true);
-          setShortening(false);
+          setRouteShortenFailed(true);
+          setRouteShortening(false);
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [generatedUrl]);
+  }, [generatedRouteUrl]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setShareViewUrl("");
+    setViewShortening(true);
+    setViewShortenFailed(false);
+
+    shortenUrl(generatedViewUrl)
+      .then((short) => {
+        if (!cancelled) {
+          setShareViewUrl(short);
+          setViewShortening(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setViewShortenFailed(true);
+          setViewShortening(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [generatedViewUrl]);
+
+  function handleCopy(url, setCopied) {
+    onCopy(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1400);
+  }
 
   return (
     <div data-testid="wizard-step-4">
@@ -332,58 +403,114 @@ function Step4({ generatedUrl, onCopy, onStartOver }) {
         </span>
         Link ready
       </div>
-      <p className="hint center-text">
-        Share this instead of your article link directly, and it will route readers through
-        permitting your AI usage first.
-      </p>
-      <label className="field-label">{shortenFailed ? "Consent link" : "Short link"}</label>
-      <div className="link-box">
-        <input
-          type="text"
-          readOnly
-          value={shortening ? "Creating short link…" : displayUrl}
-          data-testid="wizard-consent-link"
-        />
-        <button
-          disabled={shortening}
-          onClick={() => {
-            onCopy(displayUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1400);
-          }}
-        >
-          {copied ? "Copied" : "Copy"}
-        </button>
-      </div>
-      {!shortening && !shortenFailed && (
+
+      <section className="output-section">
+        <h2 className="output-heading">Share link</h2>
         <p className="hint">
-          Shortened automatically for sharing. Same consent receipt as the full link.
+          Use this in your bio, newsletter, or social posts. Readers see your disclosure before
+          reaching the article.
         </p>
-      )}
-      {shortenFailed && (
-        <p className="hint">
-          Could not create a short link right now. Copy the full link below instead.
-        </p>
-      )}
-      <button
-        type="button"
-        className="link-back link-toggle"
-        data-testid="wizard-full-link-toggle"
-        onClick={() => setShowFullLink((prev) => !prev)}
-      >
-        {showFullLink ? "Hide full link" : "Show full link"}
-      </button>
-      {showFullLink && (
-        <div className="full-link-box">
-          <input type="text" readOnly value={generatedUrl} data-testid="wizard-full-consent-link" />
+        <label className="field-label">{routeShortenFailed ? "Route link" : "Short link"}</label>
+        <div className="link-box">
+          <input
+            type="text"
+            readOnly
+            value={routeShortening ? "Creating short link…" : displayRouteUrl}
+            data-testid="wizard-consent-link"
+          />
+          <button
+            disabled={routeShortening}
+            onClick={() => handleCopy(displayRouteUrl, setRouteCopied)}
+          >
+            {routeCopied ? "Copied" : "Copy"}
+          </button>
         </div>
-      )}
+        {!routeShortening && !routeShortenFailed && (
+          <p className="hint">Shortened automatically for sharing.</p>
+        )}
+        {routeShortenFailed && (
+          <p className="hint">Could not create a short link right now. Copy the full link below.</p>
+        )}
+        <button
+          type="button"
+          className="link-back link-toggle"
+          data-testid="wizard-full-link-toggle"
+          onClick={() => setShowFullRouteLink((prev) => !prev)}
+        >
+          {showFullRouteLink ? "Hide full link" : "Show full link"}
+        </button>
+        {showFullRouteLink && (
+          <div className="full-link-box">
+            <input
+              type="text"
+              readOnly
+              value={generatedRouteUrl}
+              data-testid="wizard-full-consent-link"
+            />
+          </div>
+        )}
+      </section>
+
+      <section className="output-section">
+        <h2 className="output-heading">Add to your article</h2>
+        <p className="hint">
+          For readers who land on the article directly. Place the badge and/or disclosure link on
+          the page itself.
+        </p>
+
+        <label className="field-label">Disclosure link</label>
+        <p className="hint field-hint">
+          For a byline or footer, e.g. &ldquo;How AI was used in this piece.&rdquo;
+        </p>
+        <div className="link-box">
+          <input
+            type="text"
+            readOnly
+            value={viewShortening ? "Creating short link…" : displayViewUrl}
+            data-testid="wizard-disclosure-link"
+          />
+          <button
+            disabled={viewShortening}
+            onClick={() => handleCopy(displayViewUrl, setViewCopied)}
+            data-testid="wizard-disclosure-copy"
+          >
+            {viewCopied ? "Copied" : "Copy"}
+          </button>
+        </div>
+        {viewShortenFailed && (
+          <p className="hint">Shortening unavailable. Copy uses the full disclosure link.</p>
+        )}
+
+        <label className="field-label badge-label">Badge</label>
+        <p className="hint field-hint">
+          Download the SVG and upload it to your post. On Substack, add the image then link it to
+          your disclosure URL above.
+        </p>
+        {badgeSvg && (
+          <div
+            className="badge-preview"
+            data-testid="wizard-badge-preview"
+            dangerouslySetInnerHTML={{ __html: badgeSvg }}
+          />
+        )}
+        <div className="badge-actions">
+          <button
+            type="button"
+            disabled={!badgeSvg}
+            data-testid="wizard-badge-download"
+            onClick={() => downloadBadgeSvg(badgeSvg)}
+          >
+            Download SVG
+          </button>
+        </div>
+      </section>
+
       <div className="actions">
         <button className="link-back" onClick={onStartOver}>
           Start over
         </button>
-        <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-          <button className="primary" disabled={shortening}>
+        <a href={previewRouteUrl} target="_blank" rel="noopener noreferrer">
+          <button className="primary" disabled={routeShortening}>
             Preview as reader
           </button>
         </a>

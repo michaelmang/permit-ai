@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { SCOPES } from "../lib/scopes";
 import { b64decode, shortHash } from "../lib/codec";
 
-export default function ReceiptView({ d }) {
+export default function ReceiptView({ d, mode = "route" }) {
   const [payload, setPayload] = useState(null);
   const [rid, setRid] = useState("");
   const [error, setError] = useState(false);
@@ -32,6 +32,7 @@ export default function ReceiptView({ d }) {
     return <h1>Loading&hellip;</h1>;
   }
 
+  const isViewMode = mode === "view";
   const isNone = payload.none === true;
   const scopeItems = isNone
     ? []
@@ -39,7 +40,15 @@ export default function ReceiptView({ d }) {
 
   return (
     <>
-      <h1>{isNone ? "No AI was used" : "How AI was used"}</h1>
+      <h1>
+        {isViewMode
+          ? isNone
+            ? "No AI was used in this piece"
+            : "How AI was used in this piece"
+          : isNone
+            ? "No AI was used"
+            : "How AI was used"}
+      </h1>
 
       <div className="status-line">
         {isNone ? "None" : "Disclosed"} <span className="rid">&middot; #{rid}</span>
@@ -64,16 +73,26 @@ export default function ReceiptView({ d }) {
         reported checking, and carries no cryptographic or platform guarantee.
       </div>
 
-      {payload.target && <div className="target-line">Continuing to: {payload.target}</div>}
+      {!isViewMode && payload.target && (
+        <div className="target-line">Continuing to: {payload.target}</div>
+      )}
 
-      <button
-        className="primary continue-btn"
-        onClick={() => {
-          if (payload.target) window.location.href = payload.target;
-        }}
-      >
-        Continue to article
-      </button>
+      {isViewMode ? (
+        payload.target && (
+          <a className="article-link" href={payload.target}>
+            Open article &rarr;
+          </a>
+        )
+      ) : (
+        <button
+          className="primary continue-btn"
+          onClick={() => {
+            if (payload.target) window.location.href = payload.target;
+          }}
+        >
+          Continue to article
+        </button>
+      )}
     </>
   );
 }

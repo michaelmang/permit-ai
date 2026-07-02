@@ -341,3 +341,51 @@ button:disabled {
 .center-text {
   text-align: center;
 }
+
+.output-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.output-heading {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.field-hint {
+  margin: 0 0 10px;
+}
+
+.badge-label {
+  margin-top: 24px;
+}
+
+.badge-preview {
+  margin: 12px 0;
+  max-width: 320px;
+}
+
+.badge-preview svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.badge-actions {
+  margin-top: 8px;
+}
+
+.article-link {
+  display: inline-block;
+  margin-top: 24px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.article-link:hover {
+  color: #333;
+}
