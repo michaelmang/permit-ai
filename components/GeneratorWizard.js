@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { SCOPES } from "../lib/scopes";
 import { b64encode, b64decode, shortHash } from "../lib/codec";
 import { buildConsentUrl } from "../lib/links";
-import { buildDisclosureBadgeSvg, downloadBadgeSvg } from "../lib/badge";
+import { buildDisclosureBadgeSvg, badgeSvgToDataUri, downloadBadgeSvg } from "../lib/badge";
 import { buildScopeSuggestionUrl } from "../lib/github";
 import { isValidHttpUrl } from "../lib/validation";
 import { shortenUrl } from "../lib/shorten";
@@ -487,10 +487,13 @@ function Step4({ generatedRouteUrl, generatedViewUrl, encodedPayload, onCopy, on
           your disclosure URL above.
         </p>
         {badgeSvg && (
-          <div
+          <img
             className="badge-preview"
             data-testid="wizard-badge-preview"
-            dangerouslySetInnerHTML={{ __html: badgeSvg }}
+            src={badgeSvgToDataUri(badgeSvg)}
+            alt="AI disclosure badge preview"
+            width={320}
+            height={64}
           />
         )}
         <div className="badge-actions">
