@@ -1,9 +1,10 @@
-import { DISCLOSURE_LABEL } from "../lib/disclosure";
+import { getBadgeLabel } from "../lib/disclosure";
 import { getBadgeBorderStyle } from "../lib/badgeBorder";
 
 export default function DisclosureBadge({ items, className = "", testId }) {
   const border = getBadgeBorderStyle(items);
   const isGradient = border.type === "gradient";
+  const label = getBadgeLabel(items);
 
   return (
     <div
@@ -16,7 +17,7 @@ export default function DisclosureBadge({ items, className = "", testId }) {
       data-testid={testId}
     >
       <div className="disclosure-badge-header">
-        <span className="disclosure-badge-label">{DISCLOSURE_LABEL}</span>
+        <span className="disclosure-badge-label">{label}</span>
       </div>
       <ul className="disclosure-badge-items">
         {items.map((item) => (
