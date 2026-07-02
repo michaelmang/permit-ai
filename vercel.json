@@ -5,7 +5,8 @@
   "rewrites": [{ "source": "/r/:id", "destination": "/api/r/:id?id=:id" }],
   "functions": {
     "api/**/*.js": {
-      "maxDuration": 10
+      "maxDuration": 10,
+      "includeFiles": "api/lib/**"
     }
   }
 }
