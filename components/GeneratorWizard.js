@@ -308,6 +308,7 @@ function Step4({ generatedRouteUrl, generatedViewUrl, encodedPayload, onCopy, on
   const [showFullRouteLink, setShowFullRouteLink] = useState(false);
   const [badgeSvg, setBadgeSvg] = useState("");
   const [badgeItems, setBadgeItems] = useState([]);
+  const [checkRotation, setCheckRotation] = useState(0);
 
   const displayRouteUrl = shareRouteUrl || generatedRouteUrl;
   const displayViewUrl = shareViewUrl || generatedViewUrl;
@@ -419,12 +420,19 @@ function Step4({ generatedRouteUrl, generatedViewUrl, encodedPayload, onCopy, on
         aria-hidden="true"
       />
       <div className="step-title center-text link-ready-title">
-        <span className="success-check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
+        <button
+          type="button"
+          className="success-check"
+          data-testid="wizard-success-orb"
+          aria-label="Spin celebration check"
+          style={{ transform: `rotate(${checkRotation}deg)` }}
+          onClick={() => setCheckRotation((rotation) => rotation + 360)}
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <circle className="success-check-circle" cx="12" cy="12" r="10" />
             <path className="success-check-mark" d="M7.5 12.5l3 3 6-7" />
           </svg>
-        </span>
+        </button>
         Link ready
       </div>
 

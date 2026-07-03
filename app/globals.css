@@ -217,6 +217,21 @@ button:disabled {
   width: 28px;
   height: 28px;
   flex: none;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.success-check:hover .success-check-circle {
+  fill: #dcfce7;
+}
+
+.success-check:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  border-radius: 50%;
 }
 
 .success-check svg {
@@ -229,7 +244,7 @@ button:disabled {
   stroke-width: 1.5;
   fill: #f0fdf4;
   transform-origin: center;
-  animation: success-pop 0.45s ease-out;
+  animation: success-pop 0.28s ease-out;
 }
 
 .success-check-mark {
@@ -239,7 +254,7 @@ button:disabled {
   stroke-linejoin: round;
   stroke-dasharray: 18;
   stroke-dashoffset: 18;
-  animation: success-draw 0.35s ease-out 0.2s forwards;
+  animation: success-draw 0.22s ease-out 0.1s forwards;
 }
 
 @keyframes success-pop {
